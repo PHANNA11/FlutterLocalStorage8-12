@@ -1,22 +1,22 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_local_storage/database/connection_db.dart';
-import 'package:flutter_local_storage/model/note_model.dart';
-import 'package:flutter_local_storage/view/add_edit_note.dart';
+import 'package:flutter_local_storage/widget/form_widget.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:intl/intl.dart';
 
-import 'seach_filter_note.dart';
+import '../database/connection_db.dart';
+import '../model/note_model.dart';
+import 'add_edit_note.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class SearchFilterNoteScreen extends StatefulWidget {
+  const SearchFilterNoteScreen({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<SearchFilterNoteScreen> createState() => _SearchFilterNoteScreenState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _SearchFilterNoteScreenState extends State<SearchFilterNoteScreen> {
   List<NoteModel> listNotes = [];
   void getData() async {
     await ConnectionDb().getNotes().then(
@@ -30,7 +30,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getData();
   }
@@ -40,23 +39,18 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('App Note'),
-        actions: [
-          IconButton(
-            onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => SearchFilterNoteScreen(),
-                )),
-            icon: Icon(
-              Icons.search,
-              color: (Colors.black),
-            ),
-          ),
-          SizedBox(
-            width: 20,
-          )
-        ],
+        title: TextFormWidget(
+          hindText: 'Search note',
+          onChanged: (value) async {
+            await ConnectionDb().getNotesBySearch(search: value).then(
+              (value) {
+                setState(() {
+                  listNotes = value;
+                });
+              },
+            );
+          },
+        ),
       ),
       body: listNotes.isEmpty
           ? Center(
@@ -192,17 +186,6 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () async {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => AddEditNoteScreen(
-                        isAdd: true,
-                      )));
-        },
-      ),
     );
   }
 }

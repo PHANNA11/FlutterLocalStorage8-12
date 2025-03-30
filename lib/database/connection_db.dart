@@ -12,7 +12,7 @@ class ConnectionDb {
         onCreate: (Database db, int version) async {
       // When creating the db, create the table
       await db.execute(
-          'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, body TEXT)');
+          'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, body TEXT,date TEXT,category TEXT,colors TEXT)');
     });
   }
 
@@ -26,7 +26,7 @@ class ConnectionDb {
     var db = await initDatabse();
     List<Map<String, dynamic>> result = await db.query(table);
 
-    return result.map((e) => NoteModel.fronMap(map: e)).toList();
+    return result.map((e) => NoteModel.fromMap(map: e)).toList();
   }
 
   Future<void> deleteNote({required int id}) async {
@@ -37,6 +37,16 @@ class ConnectionDb {
 
   Future<void> updateNote({required NoteModel note}) async {
     var db = await initDatabse();
-    await db.update(table, note.toMap(), where: 'id=?', whereArgs: [note.id]);
+    await db.update(table, note.toMap(isAdd: false),
+        where: 'id=?', whereArgs: [note.id]);
+  }
+
+  Future<List<NoteModel>> getNotesBySearch({String? search}) async {
+    var db = await initDatabse();
+    List<Map<String, dynamic>> result = await db.rawQuery(
+      "SELECT * FROM notetb WHERE title LIKE '%$search%' OR  body LIKE '%$search%' OR  category LIKE '%$search%' OR  date LIKE '%$search%'",
+    );
+
+    return result.map((e) => NoteModel.fromMap(map: e)).toList();
   }
 }
